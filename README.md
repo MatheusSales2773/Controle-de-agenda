@@ -2,6 +2,7 @@
 Exercício 3 - Estruturas da Universidade da Católica. É um programa que controle uma agenda
 
 Instruções
+
 -Faça um programa que controle uma agenda. Com as funções apaga(), altera(), lista(), le(), grava(), menu(). Depois faça as seguintes melhorias:
 
 -Exiba o tamanho da agenda no menu principal;
