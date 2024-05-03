@@ -2,175 +2,302 @@
 #include <stdlib.h>
 #include <string.h>
 
+enum PhoneType {
+  Celular = 1,
+  Fixo,
+  Residencia,
+  Trabalho,
+};
+
 typedef struct {
-    char *nome;
-    char *email;
-    char *telefone;
-    char *data_aniversario;
-    char *tipo_telefone;
-} Contato;
+  int day;
+  int month;
+  int year;
+} Birthday;
 
-Contato *agenda = NULL;
-int num_contatos = 0;
-int capacidade_agenda = 0;
+typedef struct {
+  char name[50];
+  char phoneNumber[11];
+  Birthday birthday;
+  char email[25];
+  enum PhoneType phoneType;
+} Contact;
 
-void expandir_agenda() {
-    if (capacidade_agenda == 0) {
-        capacidade_agenda = 10; // Inicialmente capacidade para 10 contatos
-        agenda = malloc(capacidade_agenda * sizeof(Contato));
-    } else {
-        capacidade_agenda *= 2; // Dobrar a capacidade
-        agenda = realloc(agenda, capacidade_agenda * sizeof(Contato));
+Contact contacts[20];
+int contactsAmount = 0, sizeOfContacts = sizeof(contacts) / sizeof(contacts[0]);
+
+int compareNames(char name[50]) {
+  for (int i = 0; i < contactsAmount; i++) {
+    if (strcmp(name, contacts[i].name) == 0) {
+      return 1;
     }
-    if (!agenda) {
-        printf("Erro de alocacao de memoria.\n");
-        exit(1);
-    }
+  }
+  return 0;
 }
 
-char *ler_string() {
-    char buffer[1024];
-    fgets(buffer, sizeof(buffer), stdin);
-    buffer[strcspn(buffer, "\n")] = 0; // Remove a newline
-    char *str = malloc(strlen(buffer) + 1);
-    strcpy(str, buffer);
-    return str;
-}
+void grava() {
+  system("clear");
 
-void adiciona() {
-    if (num_contatos == capacidade_agenda) {
-        expandir_agenda();
-    }
-    
-    Contato novo;
-    printf("Nome: ");
-    novo.nome = ler_string();
+  int option, optMail, optType;
+  enum PhoneType type;
 
-    // Verifica duplicidade
-    for (int i = 0; i < num_contatos; i++) {
-        if (strcmp(agenda[i].nome, novo.nome) == 0) {
-            printf("Erro: Ja existe um contato com esse nome!\n");
-            free(novo.nome);
-            return;
-        }
-    }
+  printf("+-------------------------------------------+\n");
+  printf("¦          ADICIONAR NOVO CONTATO           ¦\n");
+  printf("+-------------------------------------------+\n\n");
 
-    printf("Email: ");
-    novo.email = ler_string();
-    printf("Telefone: ");
-    novo.telefone = ler_string();
-    printf("Data de Aniversario (AAAA-MM-DD): ");
-    novo.data_aniversario = ler_string();
-    printf("Tipo de Telefone (celular, fixo, residencia, trabalho): ");
-    novo.tipo_telefone = ler_string();
+  printf("Nome: ");
+  scanf("%s", contacts[contactsAmount].name);
 
-    agenda[num_contatos++] = novo;
-    printf("Contato adicionado!\n");
-}
+  int compareResult = compareNames(contacts[contactsAmount].name);
 
-void apaga() {
-    int posicao;
-    printf("Informe a posicao do contato para apagar: ");
-    scanf("%d", &posicao);
-    getchar(); // Consumir o newline
-    if (posicao < 1 || posicao > num_contatos) {
-        printf("Posicao invalida!\n");
-        return;
-    }
-    posicao--; // Ajuste para índice base-0
+  if (compareResult == 1) {
+    printf("\n============================================\n");
+    printf("           Contato já cadastrado            \n");
+    printf("============================================\n\n");
 
-    free(agenda[posicao].nome);
-    free(agenda[posicao].email);
-    free(agenda[posicao].telefone);
-    free(agenda[posicao].data_aniversario);
-    free(agenda[posicao].tipo_telefone);
+    return;
+  }
 
-    for (int i = posicao; i < num_contatos - 1; i++) {
-        agenda[i] = agenda[i + 1];
-    }
-    num_contatos--;
-    printf("Contato apagado!\n");
-}
+  printf("Telefone: ");
+  scanf("%s", contacts[contactsAmount].phoneNumber);
 
-void altera() {
-    int posicao;
-    printf("Informe a posicao do contato para alterar: ");
-    scanf("%d", &posicao);
-    getchar(); // Consumir o newline
-    if (posicao < 1 || posicao > num_contatos) {
-        printf("Posicao invalida!\n");
-        return;
-    }
-    posicao--; // Ajuste para índice base-0
+  printf("Qual o tipo de contato?\n \t[1] Celular\n \t[2] Fixo\n \t[3] "
+         "Residencia\n \t[4] Trabalho\n");
+  scanf("%d", &optType);
 
-    printf("Alterando contato: %s\n", agenda[posicao].nome);
-    printf("Novo Email: ");
-    free(agenda[posicao].email);
-    agenda[posicao].email = ler_string();
-    printf("Novo Telefone: ");
-    free(agenda[posicao].telefone);
-    agenda[posicao].telefone = ler_string();
-    printf("Nova Data de Aniversario: ");
-    free(agenda[posicao].data_aniversario);
-    agenda[posicao].data_aniversario = ler_string();
-    printf("Novo Tipo de Telefone: ");
-    free(agenda[posicao].tipo_telefone);
-    agenda[posicao].tipo_telefone = ler_string();
-    printf("Contato alterado!\n");
+  switch (optType) {
+  case 1:
+    contacts[contactsAmount].phoneType = Celular;
+    break;
+  case 2:
+    contacts[contactsAmount].phoneType = Fixo;
+    break;
+  case 3:
+    contacts[contactsAmount].phoneType = Residencia;
+    break;
+  case 4:
+    contacts[contactsAmount].phoneType = Trabalho;
+    break;
+  default:
+    printf("Opção inválida\n");
+  }
+
+  printf("\nDeseja inserir a data de nascimento?\n");
+  printf("[1] Sim\n[2] Não ");
+  scanf("%d", &option);
+
+  if (option == 1) {
+    printf("\nInsira o dia (DD): ");
+    scanf("%d", &contacts[contactsAmount].birthday.day);
+    printf("Insira o mês (MM): ");
+    scanf("%d", &contacts[contactsAmount].birthday.month);
+    printf("Insira o ano (YYYY): ");
+    scanf("%d", &contacts[contactsAmount].birthday.year);
+  }
+
+  printf("\nDeseja inserir um e-mail?\n");
+  printf("[1] Sim\n[2] Não ");
+  scanf("%d", &optMail);
+
+  if (optMail == 1) {
+    printf("\nE-mail: ");
+    scanf("%s", contacts[contactsAmount].email);
+  }
+
+  system("clear");
+
+  printf("============================================\n");
+  printf("       ✔ Contato salvo com sucesso!         \n");
+  printf("============================================\n\n");
+  contactsAmount++;
 }
 
 void lista() {
-    printf("Lista de Contatos (%d):\n", num_contatos);
-    for (int i = 0; i < num_contatos; i++) {
-        printf("Posicao %d: %s, %s, %s, %s, %s\n", i + 1, agenda[i].nome, agenda[i].email, agenda[i].telefone, agenda[i].data_aniversario, agenda[i].tipo_telefone);
+  system("clear");
+
+  int i;
+
+  printf("+-------------------------------------------+\n");
+  printf("¦             LISTA DE CONTATOS             ¦\n");
+  printf("+-------------------------------------------+\n");
+
+  for (i = 0; i < contactsAmount; i++) {
+    printf("\nContato nº %d\n", i + 1);
+    printf("--------------------------------------------\n");
+    printf("Nome: %s\n", contacts[i].name);
+    printf("Telefone: %s\n", contacts[i].phoneNumber);
+
+    if (contacts[i].birthday.day != 0) {
+      printf("Data de nascimento: %d/%d/%d\n", contacts[i].birthday.day,
+             contacts[i].birthday.month, contacts[i].birthday.year);
     }
+
+    if (strcmp(contacts[i].email, "") != 0) {
+      printf("E-mail: %s\n\n", contacts[i].email);
+    }
+
+    // system("pause");
+  }
+
+  printf("\n=============================================\n");
+  printf("                  FIM DA LISTA               \n\n\n");
+}
+
+void altera() {
+  system("clear");
+
+  char name[50];
+  int i, found = 0;
+
+  printf("+-------------------------------------------+\n");
+  printf("¦              ALTERAR CONTATO              ¦\n");
+  printf("+-------------------------------------------+\n\n");
+
+  printf("Insira o nome do contato que deseja alterar: ");
+  scanf("%s", name);
+
+  for (i = 0; i < contactsAmount; i++) {
+    if (strcmp(name, contacts[i].name) == 0) {
+      printf("\n--------------------------------------------\n");
+      printf("Alterando %s...\n", name);
+      printf("Digite o novo número de telefone: ");
+      scanf("%s", contacts[i].phoneNumber);
+
+      found = 1;
+      system("clear");
+
+      printf("============================================\n");
+      printf("      ✔ Contato alterado com sucesso!       \n");
+      printf("============================================\n\n");
+
+      break;
+    }
+  }
+
+  if (!found) {
+    system("clear");
+
+    printf("============================================\n");
+    printf("          Contato não encontrado!           \n");
+    printf("============================================\n\n");
+  }
+}
+
+void apaga() {
+  system("clear");
+
+  char name[50];
+  int i, found = 0;
+
+  printf("+-------------------------------------------+\n");
+  printf("¦              EXCLUIR CONTATO              ¦\n");
+  printf("+-------------------------------------------+\n\n");
+
+  printf("Digite o nome do contato que deseja excluir: ");
+  scanf("%s", name);
+
+  for (i = 0; i < contactsAmount; i++) {
+    if (strcmp(name, contacts[i].name) == 0) {
+      found = 1;
+
+      for (int j = i; j < contactsAmount - 1; j++) {
+        strcpy(contacts[j].name, contacts[j + 1].name);
+        strcpy(contacts[j].phoneNumber, contacts[j + 1].phoneNumber);
+      }
+
+      system("clear");
+
+      printf("============================================\n");
+      printf("     ✔ Contato excluído com sucesso!       \n");
+      printf("============================================\n\n");
+
+      contactsAmount--;
+      break;
+    }
+  }
+
+  if (!found) {
+    printf("============================================\n");
+    printf("          Contato não encontrado!           \n");
+    printf("============================================\n\n");
+  }
+}
+
+int compareContacts(const void *a, const void *b) {
+  Contact *contactA = (Contact *)a;
+  Contact *contactB = (Contact *)b;
+
+  return strcmp(contactA->name, contactB->name);
+}
+
+void sortContacts() {
+  int sizeOfContacts = contactsAmount;
+
+  if (sizeOfContacts == 0) {
+    printf("============================================\n");
+    printf("      Não há contatos para ordenar.         \n");
+    printf("============================================\n\n");
+    return;
+  }
+
+  qsort(contacts, sizeOfContacts, sizeof(Contact), compareContacts);
+
+  printf("============================================\n");
+  printf("      ✔ Agenda ordenada com sucesso!        \n");
+  printf("============================================\n\n");
 }
 
 void menu() {
-    printf("\nAgenda - Total de Contatos: %d\n", num_contatos);
-    printf("1. Adicionar Contato\n");
-    printf("2. Listar Contatos\n");
-    printf("3. Apagar Contato\n");
-    printf("4. Alterar Contato\n");
-    printf("0. Sair\n");
-    printf("Escolha uma opcao: ");
+  int option;
+
+  do {
+    printf("¦                    Menu                   ¦\n\n");
+    printf("★ Contatos na sua agenda: %d\n\n", contactsAmount);
+    printf("[1] Adicionar novo contato\n");
+    printf("[2] Listar todos os contatos\n");
+    printf("[3] Alterar contato\n");
+    printf("[4] Apagar contato\n\n");
+    printf("Outras opções:\n");
+    printf("[5] Ordernar lista por nome\n");
+    printf("[6] Sair da agenda\n\n");
+    printf("Selecione a opção desejada: ");
+    scanf("%d", &option);
+
+    switch (option) {
+    case 1:
+      grava();
+      break;
+    case 2:
+      lista();
+      break;
+    case 3:
+      altera();
+      break;
+    case 4:
+      apaga();
+      break;
+    case 5:
+      sortContacts();
+      break;
+    case 6:
+      printf("============================================\n");
+      printf("      Agenda fechada. Até a próxima. =)     \n");
+      printf("============================================\n\n");
+      break;
+    default:
+      system("clear");
+      printf("============================================\n");
+      printf("      Opção inválida. Tente novamente.      \n");
+      printf("============================================\n\n");
+    }
+
+  } while (option != 6);
 }
 
 int main() {
-    int opcao;
-    do {
-        menu();
-        scanf("%d", &opcao);
-        getchar(); // limpar buffer de entrada
-        
-        switch (opcao) {
-            case 1:
-                adiciona();
-                break;
-            case 2:
-                lista();
-                break;
-            case 3:
-                apaga();
-                break;
-            case 4:
-                altera();
-                break;
-            case 0:
-                printf("Saindo...\n");
-                break;
-            default:
-                printf("Opcao invalida!\n");
-        }
-    } while (opcao != 0);
+  printf("+-------------------------------------------+\n");
+  printf("¦             AGENDA TELEFÔNICA             ¦\n");
+  printf("+-------------------------------------------+\n\n");
 
-    for (int i = 0; i < num_contatos; i++) {
-        free(agenda[i].nome);
-        free(agenda[i].email);
-        free(agenda[i].telefone);
-        free(agenda[i].data_aniversario);
-        free(agenda[i].tipo_telefone);
-    }
-    free(agenda);
-    return 0;
+  menu();
 }
